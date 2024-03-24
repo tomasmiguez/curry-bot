@@ -34,7 +34,14 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , http-client
+    , http-conduit
+    , text
+    , yaml
   default-language: Haskell2010
 
 executable tech-talk-bot-exe
@@ -47,8 +54,15 @@ executable tech-talk-bot-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , http-client
+    , http-conduit
     , tech-talk-bot
+    , text
+    , yaml
   default-language: Haskell2010
 
 test-suite tech-talk-bot-test
@@ -62,6 +76,13 @@ test-suite tech-talk-bot-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , http-client
+    , http-conduit
     , tech-talk-bot
+    , text
+    , yaml
   default-language: Haskell2010

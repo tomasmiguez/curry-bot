@@ -21,6 +21,13 @@ description:         Please see the README on GitHub at <https://github.com/toma
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
+- aeson
+- bytestring
+- http-client
+- http-conduit
+- yaml
+- text
 
 ghc-options:
 - -Wall
