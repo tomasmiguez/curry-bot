@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Bamboo
       Lib
   other-modules:
       Paths_tech_talk_bot
