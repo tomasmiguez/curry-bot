@@ -27,6 +27,7 @@ library
   exposed-modules:
       Bamboo
       Lib
+      Slack
   other-modules:
       Paths_tech_talk_bot
   autogen-modules:
