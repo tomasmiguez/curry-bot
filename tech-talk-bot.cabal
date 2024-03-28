@@ -26,7 +26,7 @@ source-repository head
 library
   exposed-modules:
       Bamboo
-      Lib
+      Config
       Slack
   other-modules:
       Paths_tech_talk_bot
