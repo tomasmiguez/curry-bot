@@ -3,15 +3,18 @@
 
 module Config (getConnString, getSlackToken) where
 
-import Data.Yaml (ParseException, decodeFileEither, FromJSON)
+import Data.Yaml
 import GHC.Generics
 
 data Config = Config
             { dbConfig :: !DbConfig
             , slackConfig :: !SlackConfig
-            } deriving (Show, Generic)
+            } deriving (Show)
 
-instance FromJSON Config
+instance FromJSON Config where
+  parseJSON = withObject "Config" $ \v -> Config
+    <$> v .: "db"
+    <*> v .: "slack"
 
 data DbConfig = DbConfig
               { user :: !String

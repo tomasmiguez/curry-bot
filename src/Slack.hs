@@ -4,8 +4,9 @@ module Slack (listChannels) where
 
 import Data.Aeson
 import Network.HTTP.Simple
-import Config (getSlackToken)
 import Data.String (IsString(fromString))
+
+import Config (getSlackToken)
 
 type ChannelId = String
 type ChannelName = String
