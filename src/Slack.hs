@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Slack (listChannels, channelByName) where
+module Slack (allChannels, channelByName) where
 
 import Data.Aeson
 import Network.HTTP.Simple
@@ -37,10 +37,10 @@ slackGet token resource = setRequestBearerAuth (fromString token)
                         $ setRequestHost "slack.com"
                         $ defaultRequest
 
-listChannels :: IO (Maybe [Channel])
-listChannels = getSlackToken >>= either (const $ return Nothing) listChannelsWithToken
+allChannels :: IO (Maybe [Channel])
+allChannels = getSlackToken >>= either (const $ return Nothing) allChannelsWithToken
   where
-    listChannelsWithToken token = do
+    allChannelsWithToken token = do
       response <- httpJSON $ slackGet token "users.conversations"
       let maybeResponseBody = getResponseBody response :: Maybe ChannelsResponse
       return $ channels <$> maybeResponseBody
