@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Slack (listChannels) where
+module Slack (listChannels, channelByName) where
 
 import Data.Aeson
 import Network.HTTP.Simple
 import Data.String (IsString(fromString))
+import Data.List (find)
 
 import Config (getSlackToken)
 
@@ -43,3 +44,11 @@ listChannels = getSlackToken >>= either (const $ return Nothing) listChannelsWit
       response <- httpJSON $ slackGet token "users.conversations"
       let maybeResponseBody = getResponseBody response :: Maybe ChannelsResponse
       return $ channels <$> maybeResponseBody
+
+channelByName :: String -> IO (Maybe Channel)
+channelByName n = getSlackToken >>= either (const $ return Nothing) (channelByNameWithToken n)
+  where
+    channelByNameWithToken n' t = do
+      r <- httpJSON $ slackGet t "conversations.list"
+      let maybeBody = getResponseBody r :: Maybe ChannelsResponse
+      return $ find (\c -> n' == name c) . channels =<< maybeBody
