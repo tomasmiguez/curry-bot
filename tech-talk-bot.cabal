@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Bamboo
+      BotDb
       Config
       Slack
   other-modules:
@@ -36,7 +37,9 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      aeson
+      HDBC
+    , HDBC-postgresql
+    , aeson
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -56,7 +59,9 @@ executable tech-talk-bot-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      HDBC
+    , HDBC-postgresql
+    , aeson
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -78,7 +83,9 @@ test-suite tech-talk-bot-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      HDBC
+    , HDBC-postgresql
+    , aeson
     , base >=4.7 && <5
     , bytestring
     , containers

@@ -28,6 +28,8 @@ dependencies:
 - http-conduit
 - yaml
 - text
+- HDBC
+- HDBC-postgresql
 
 ghc-options:
 - -Wall

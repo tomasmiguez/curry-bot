@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Config (getConnString, getSlackToken) where
+module Config (connStr, slackToken) where
 
 import Data.Yaml
 import GHC.Generics
@@ -31,14 +31,14 @@ newtype SlackConfig = SlackConfig
 
 instance FromJSON SlackConfig
 
-config :: IO (Either ParseException Config)
-config = decodeFileEither "config/config.yaml"
+config :: IO Config
+config = decodeFileThrow "config/config.yaml"
 
-getConnString :: IO (Either ParseException String)
-getConnString = fmap (buildConnString . dbConfig) <$> config
+connStr :: IO String
+connStr = buildConnString . dbConfig <$> config
 
 buildConnString :: DbConfig -> String
 buildConnString c = foldr1 (++) ["postgresql://", user c, "@", host c, ":", port c, "/", database c]
 
-getSlackToken :: IO (Either ParseException String)
-getSlackToken = fmap (token . slackConfig) <$> config
+slackToken :: IO String
+slackToken = token . slackConfig <$> config

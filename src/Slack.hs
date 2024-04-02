@@ -9,12 +9,11 @@ import Network.HTTP.Simple
 import Data.String (IsString(fromString))
 import Data.List (find)
 
-import Config (getSlackToken)
+import Config (slackToken)
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString.Char8 as S8
 import Data.ByteString (toStrict)
-import Control.Monad (when)
-import Data.Maybe (isJust, fromJust)
+import Data.Maybe (fromJust)
 
 type ChannelId = String
 type ChannelName = String
@@ -63,27 +62,26 @@ slackPost t r j = setRequestBearerAuth (fromString t)
                 $ setRequestBodyJSON j
                 $ defaultRequest
 
-allChannels :: IO (Maybe [Channel])
-allChannels = getSlackToken >>= either (const $ return Nothing) allChannelsWithToken
+allChannels :: IO [Channel]
+allChannels = slackToken >>= allChannelsWithToken
   where
     allChannelsWithToken token = do
-      response <- httpJSON $ slackGet token "users.conversations"
-      let maybeResponseBody = getResponseBody response :: Maybe ChannelsResponse
-      return $ channels <$> maybeResponseBody
+      res <- httpJSON $ slackGet token "users.conversations"
+      let resBody = getResponseBody res :: ChannelsResponse
+      return $ channels resBody
 
-channelByName :: String -> IO (Maybe Channel)
-channelByName n = getSlackToken >>= either (const $ return Nothing) channelByNameWithToken
+channelByName :: String -> IO Channel
+channelByName n = slackToken >>= channelByNameWithToken
   where
-    channelByNameWithToken t = do
-      r <- httpJSON $ slackGet t "conversations.list"
-      let maybeBody = getResponseBody r :: Maybe ChannelsResponse
-      return $ find (\c -> n == name c) . channels =<< maybeBody
+    channelByNameWithToken token = do
+      res <- httpJSON $ slackGet token "conversations.list"
+      let resBody = getResponseBody res :: ChannelsResponse
+      return $ fromJust $ find (\c -> n == name c) $ channels resBody
 
 sendMsg :: String -> Channel -> IO ()
-sendMsg m c = getSlackToken >>= either (const $ return ()) sendMsgWithToken
+sendMsg m c = slackToken >>= sendMsgWithToken
   where
-    sendMsgWithToken t = do
-      r <- httpJSON $ slackPost t "chat.postMessage" Message { channelId = id c, text = m }
-      let maybeBody = getResponseBody r :: Maybe Value
-      when (isJust maybeBody) $ do
-        S8.putStrLn $ toStrict $ JSON.encode $ fromJust maybeBody
+    sendMsgWithToken token = do
+      res <- httpJSON $ slackPost token "chat.postMessage" Message { channelId = id c, text = m }
+      let resBody = getResponseBody res :: Value
+      S8.putStrLn $ toStrict $ JSON.encode resBody
