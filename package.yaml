@@ -30,6 +30,7 @@ dependencies:
 - text
 - HDBC
 - HDBC-postgresql
+- time
 
 ghc-options:
 - -Wall

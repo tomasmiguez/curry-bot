@@ -28,6 +28,8 @@ library
       Bamboo
       BotDb
       Config
+      CurryBot
+      Person
       Slack
   other-modules:
       Paths_tech_talk_bot
@@ -46,6 +48,7 @@ library
     , http-client
     , http-conduit
     , text
+    , time
     , yaml
   default-language: Haskell2010
 
@@ -69,6 +72,7 @@ executable tech-talk-bot-exe
     , http-conduit
     , tech-talk-bot
     , text
+    , time
     , yaml
   default-language: Haskell2010
 
@@ -93,5 +97,6 @@ test-suite tech-talk-bot-test
     , http-conduit
     , tech-talk-bot
     , text
+    , time
     , yaml
   default-language: Haskell2010
