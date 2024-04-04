@@ -92,7 +92,7 @@ channelByName :: String -> IO Channel
 channelByName n = slackToken >>= channelByNameWithToken
   where
     channelByNameWithToken token = do
-      res <- httpJSON $ slackGet token "conversations.list"
+      res <- httpJSON $ slackGet token "users.conversations"
       let resBody = getResponseBody res :: ChannelsResponse
       return $ fromJust $ find (\c -> n == c.name) resBody.channels
 
