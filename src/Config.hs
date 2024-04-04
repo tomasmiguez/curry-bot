@@ -1,7 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-module Config (connStr, slackToken) where
+module Config (connStr, slackToken, bambooConfig, BambooConfig(..)) where
 
 import Data.Yaml
 import GHC.Generics
@@ -9,12 +12,14 @@ import GHC.Generics
 data Config = Config
             { dbConfig :: !DbConfig
             , slackConfig :: !SlackConfig
+            , bambooConfig :: !BambooConfig
             } deriving (Show)
 
 instance FromJSON Config where
   parseJSON = withObject "Config" $ \v -> Config
     <$> v .: "db"
     <*> v .: "slack"
+    <*> v .: "bamboo"
 
 data DbConfig = DbConfig
               { user :: !String
@@ -31,14 +36,24 @@ newtype SlackConfig = SlackConfig
 
 instance FromJSON SlackConfig
 
+data BambooConfig = BambooConfig
+                 { token :: !String
+                 , reportId :: !String
+                 } deriving (Show, Generic)
+
+instance FromJSON BambooConfig
+
 config :: IO Config
 config = decodeFileThrow "config/config.yaml"
 
 connStr :: IO String
-connStr = buildConnString . dbConfig <$> config
+connStr = buildConnString . (.dbConfig) <$> config
 
 buildConnString :: DbConfig -> String
-buildConnString c = foldr1 (++) ["postgresql://", user c, "@", host c, ":", port c, "/", database c]
+buildConnString c = foldr1 (++) ["postgresql://", c.user, "@", c.host, ":", c.port, "/", c.database]
 
 slackToken :: IO String
-slackToken = token . slackConfig <$> config
+slackToken = (.token) . (.slackConfig) <$> config
+
+bambooConfig :: IO BambooConfig
+bambooConfig = (.bambooConfig) <$> config
