@@ -3,7 +3,7 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module BotDb (peopleBirthdayToday, updateSlackIdByEmail, upsertEmployees) where
+module BotDb (today, peopleBirthdayToday, updateSlackIdByEmail, upsertEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent) where
 
 import Config (connStr)
 import Person
@@ -15,6 +15,7 @@ import Data.Time.Calendar
 import Data.Time.LocalTime
 import Control.Monad (when)
 import Data.List (intercalate)
+import Data.Maybe (listToMaybe)
 
 conn :: IO Connection
 conn = connStr >>= connectPostgreSQL
@@ -34,7 +35,10 @@ peopleByBirthday m d = do
     rowToPeople x = error $ "Unexpected result: " ++ show x
 
 peopleBirthdayToday :: IO [Person]
-peopleBirthdayToday = (\(_, m, d) -> peopleByBirthday m d) . toGregorian . localDay . zonedTimeToLocalTime =<< getZonedTime
+peopleBirthdayToday = (\(_, m, d) -> peopleByBirthday m d) . toGregorian =<< today
+
+today :: IO Day
+today = localDay . zonedTimeToLocalTime <$> getZonedTime
 
 -- Handlear bien los dos casos, que pasa si no encuentra a nadie en la DB pero si en Slack?
 updateSlackIdByEmail :: String -> String -> IO ()
@@ -59,6 +63,21 @@ upsertEmployees employees = do
               ++ updateStmt
   c <- conn
   _ <- run c query values
+  commit c
+  disconnect c
+  return ()
+
+lastBirthdayReminderDay :: IO (Maybe Day)
+lastBirthdayReminderDay = do
+  c <- conn
+  r <- quickQuery' c "SELECT ocurred_at FROM events WHERE type = 'birthdayReminder' ORDER BY ocurred_at DESC LIMIT 1" []
+  disconnect c
+  return $ localDay . zonedTimeToLocalTime . fromSql . head <$> listToMaybe r
+
+saveBirthdayReminderEvent :: IO ()
+saveBirthdayReminderEvent = do
+  c <- conn
+  _ <- run c "INSERT INTO events (type, ocurred_at) VALUES ('birthdayReminder', NOW())" []
   commit c
   disconnect c
   return ()

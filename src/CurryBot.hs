@@ -3,12 +3,13 @@
 
 module CurryBot (updateSlackIds, updateEmployees, sendTodayBirthdayReminder) where
 
-import Data.Maybe (fromJust)
-
 import Slack
 import BotDb
 import Bamboo
 import Person
+
+import Data.Maybe (fromJust)
+import Data.Time.Calendar
 
 updateSlackIds :: IO ()
 updateSlackIds = do
@@ -23,16 +24,23 @@ updateEmployees = do
 sendTodayBirthdayReminder :: IO ()
 sendTodayBirthdayReminder = do
   birthdayPeople <- peopleBirthdayToday
-  sendTodayBirthdayReminderTo birthdayPeople
+  lastReminderDay <- lastBirthdayReminderDay
+  t <- today
+  sendTodayBirthdayReminder' birthdayPeople lastReminderDay t
 
-sendTodayBirthdayReminderTo :: [Person] -> IO ()
-sendTodayBirthdayReminderTo people
-  | null people = return ()
+sendTodayBirthdayReminder' :: [Person] -> Maybe Day -> Day -> IO ()
+sendTodayBirthdayReminder' people lastReminderDay t
+  | null people || maybeCompare lastReminderDay t = return ()
   | otherwise   = do
     channel <- channelByName "general"
     _ <- sendMsg message channel
+    _ <- saveBirthdayReminderEvent
     return ()
     where
       header = "Hoy cumplen años: \n"
       body = "- " ++ (identifier =<< people) ++ ".\n"
       message = header ++ body
+
+maybeCompare :: Ord a => Maybe a -> a -> Bool
+maybeCompare Nothing _ = False
+maybeCompare (Just x) y = x >= y
