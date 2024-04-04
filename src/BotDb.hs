@@ -1,13 +1,20 @@
-module BotDb (peopleBirthdayToday, updateSlackIdByEmail) where
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE OverloadedRecordDot #-}
+
+module BotDb (peopleBirthdayToday, updateSlackIdByEmail, upsertEmployees) where
+
+import Config (connStr)
+import Person
+import Bamboo (Employee(..))
 
 import Database.HDBC
 import Database.HDBC.PostgreSQL
 import Data.Time.Calendar
 import Data.Time.LocalTime
-
-import Config (connStr)
-import Person
 import Control.Monad (when)
+import Data.List (intercalate)
 
 conn :: IO Connection
 conn = connStr >>= connectPostgreSQL
@@ -35,3 +42,17 @@ updateSlackIdByEmail slackId email = do
   when (r == 1) $ do
     putStrLn "Succesfully updated slack_id."
   commit c
+
+upsertEmployees :: [Employee] -> IO ()
+upsertEmployees employees = do
+  let values = (\e -> [toSql e.email, toSql e.firstName, toSql e.lastName, toSql e.birthday]) =<< employees
+      placeholders = intercalate "," (replicate (length employees) "(?,?,?,?)")
+      updateStmt = "UPDATE SET first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, birthday = EXCLUDED.birthday"
+      query = "INSERT INTO people (email, first_name, last_name, birthday) VALUES "
+              ++ placeholders
+              ++ " ON CONFLICT (email) DO "
+              ++ updateStmt
+  c <- conn
+  _ <- run c query values
+  commit c
+  return ()

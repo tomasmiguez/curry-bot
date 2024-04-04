@@ -3,7 +3,7 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module Bamboo (allEmployees) where
+module Bamboo (allEmployees, Employee(..)) where
 
 import Data.Aeson
 import Network.HTTP.Simple
