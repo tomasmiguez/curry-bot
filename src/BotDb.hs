@@ -19,10 +19,10 @@ import Data.List (intercalate)
 conn :: IO Connection
 conn = connStr >>= connectPostgreSQL
 
-peopleByBirthday :: Day -> IO [Person]
-peopleByBirthday d = do
+peopleByBirthday :: Int -> Int -> IO [Person]
+peopleByBirthday m d = do
   c <- conn
-  r <- quickQuery' c "SELECT slack_id, email, first_name, last_name, birthday FROM people where birthday = ?" [toSql d]
+  r <- quickQuery' c "SELECT slack_id, email, first_name, last_name, birthday FROM people where EXTRACT(MONTH FROM birthday) = ? AND EXTRACT(DAY FROM birthday) = ?" [toSql m, toSql d]
   return $ map rowToPeople r
   where
     rowToPeople [sqlSlackId, sqlEmail, sqlFirstName, sqlLastName, sqlBirthday] =
@@ -34,7 +34,7 @@ peopleByBirthday d = do
     rowToPeople x = error $ "Unexpected result: " ++ show x
 
 peopleBirthdayToday :: IO [Person]
-peopleBirthdayToday = peopleByBirthday . localDay . zonedTimeToLocalTime =<< getZonedTime
+peopleBirthdayToday = (\(_, m, d) -> peopleByBirthday m d) . toGregorian . localDay . zonedTimeToLocalTime =<< getZonedTime
 
 -- Handlear bien los dos casos, que pasa si no encuentra a nadie en la DB pero si en Slack?
 updateSlackIdByEmail :: String -> String -> IO ()
