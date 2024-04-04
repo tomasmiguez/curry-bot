@@ -42,10 +42,11 @@ updateSlackIdByEmail slackId email = do
   c <- conn
   r <- run c "UPDATE people SET slack_id = ? WHERE email = ?" [toSql slackId, toSql email]
   when (r /= 1) $ do
-    putStrLn "Couldn't update person's slack ID."
+    putStrLn $ "Couldn't update person's slack ID: " ++ slackId ++ ", " ++ email
   when (r == 1) $ do
     putStrLn "Succesfully updated slack_id."
   commit c
+  disconnect c
 
 upsertEmployees :: [Employee] -> IO ()
 upsertEmployees employees = do
@@ -59,4 +60,5 @@ upsertEmployees employees = do
   c <- conn
   _ <- run c query values
   commit c
+  disconnect c
   return ()
