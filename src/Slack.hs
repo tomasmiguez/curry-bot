@@ -1,19 +1,19 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Slack (allChannels, channelByName, sendMsg) where
-
-import Prelude hiding (id)
+module Slack (allChannels, channelByName, sendMsg, allUsersWithEmail, User(..)) where
 
 import Data.Aeson
 import Network.HTTP.Simple
 import Data.String (IsString(fromString))
 import Data.List (find)
+import Data.ByteString (toStrict)
+import Data.Maybe (fromJust, isJust)
+import qualified Data.ByteString.Char8 as S8
 
 import Config (slackToken)
-import qualified Data.Aeson as JSON
-import qualified Data.ByteString.Char8 as S8
-import Data.ByteString (toStrict)
-import Data.Maybe (fromJust)
 
 type ChannelId = String
 type ChannelName = String
@@ -43,9 +43,27 @@ data Message = Message
 
 instance ToJSON Message where
   toJSON m = object
-    [ "channel" .= channelId m
-    , "text" .= text m
+    [ "channel" .= m.channelId
+    , "text" .= m.text
     ]
+
+data User = User
+               { id :: !String
+               , email :: !(Maybe String)
+               } deriving (Show, Eq)
+
+instance FromJSON User where
+  parseJSON = withObject "User" $ \obj ->
+    User <$> obj .: "id"
+              <*> (obj .: "profile" >>= (.:? "email"))
+
+newtype UsersResponse = UsersResponse
+                      { users :: [User]
+                      } deriving (Show, Eq)
+
+instance FromJSON UsersResponse where
+  parseJSON = withObject "UsersResponse" $ \obj ->
+    UsersResponse <$> obj .: "members"
 
 slackGet :: String -> String -> Request
 slackGet token resource = setRequestBearerAuth (fromString token)
@@ -68,7 +86,7 @@ allChannels = slackToken >>= allChannelsWithToken
     allChannelsWithToken token = do
       res <- httpJSON $ slackGet token "users.conversations"
       let resBody = getResponseBody res :: ChannelsResponse
-      return $ channels resBody
+      return resBody.channels
 
 channelByName :: String -> IO Channel
 channelByName n = slackToken >>= channelByNameWithToken
@@ -76,12 +94,23 @@ channelByName n = slackToken >>= channelByNameWithToken
     channelByNameWithToken token = do
       res <- httpJSON $ slackGet token "conversations.list"
       let resBody = getResponseBody res :: ChannelsResponse
-      return $ fromJust $ find (\c -> n == name c) $ channels resBody
+      return $ fromJust $ find (\c -> n == c.name) resBody.channels
 
 sendMsg :: String -> Channel -> IO ()
 sendMsg m c = slackToken >>= sendMsgWithToken
   where
     sendMsgWithToken token = do
-      res <- httpJSON $ slackPost token "chat.postMessage" Message { channelId = id c, text = m }
+      res <- httpJSON $ slackPost token "chat.postMessage" Message { channelId = c.id, text = m }
       let resBody = getResponseBody res :: Value
-      S8.putStrLn $ toStrict $ JSON.encode resBody
+      S8.putStrLn $ toStrict $ encode resBody
+
+allUsers :: IO [User]
+allUsers = slackToken >>= allUsersWithToken
+  where
+    allUsersWithToken token = do
+      res <- httpJSON $ slackGet token "users.list"
+      let resBody = getResponseBody res :: UsersResponse
+      return resBody.users
+
+allUsersWithEmail :: IO [User]
+allUsersWithEmail = filter (isJust . (.email)) <$> allUsers
