@@ -25,8 +25,12 @@ peopleByBirthday d = do
   r <- quickQuery' c "SELECT slack_id, email, first_name, last_name, birthday FROM people where birthday = ?" [toSql d]
   return $ map rowToPeople r
   where
-    rowToPeople [sqlSlackId, sqlEmail, sqlBirthday] =
-      Person { slackId = fromSql sqlSlackId, email = fromSql sqlEmail, birthday = fromSql sqlBirthday }
+    rowToPeople [sqlSlackId, sqlEmail, sqlFirstName, sqlLastName, sqlBirthday] =
+      Person { slackId = fromSql sqlSlackId
+             , email = fromSql sqlEmail
+             , firstName = fromSql sqlFirstName
+             , lastName = fromSql sqlLastName
+             , birthday = fromSql sqlBirthday }
     rowToPeople x = error $ "Unexpected result: " ++ show x
 
 peopleBirthdayToday :: IO [Person]
