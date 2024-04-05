@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Config (connStr, slackToken, bambooConfig, BambooConfig(..)) where
+module Config (connStr, slackConfig, SlackConfig(..), bambooConfig, BambooConfig(..)) where
 
 import Data.Yaml
 import GHC.Generics
@@ -31,8 +31,9 @@ data DbConfig = DbConfig
 
 instance FromJSON DbConfig
 
-newtype SlackConfig = SlackConfig
-                 { token :: String
+data SlackConfig = SlackConfig
+                 { token :: !String
+                 , channelName :: !String
                  } deriving (Show, Generic)
 
 instance FromJSON SlackConfig
@@ -55,8 +56,8 @@ connStr = buildConnString . (.dbConfig) <$> config
 buildConnString :: DbConfig -> String
 buildConnString c = foldr1 (++) ["postgresql://", c.user, "@", c.host, ":", c.port, "/", c.database]
 
-slackToken :: IO String
-slackToken = (.token) . (.slackConfig) <$> config
+slackConfig :: IO SlackConfig
+slackConfig = (.slackConfig) <$> config
 
 bambooConfig :: IO BambooConfig
 bambooConfig = (.bambooConfig) <$> config

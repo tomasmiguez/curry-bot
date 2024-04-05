@@ -13,7 +13,7 @@ import Data.ByteString (toStrict)
 import Data.Maybe (fromJust, isJust)
 import qualified Data.ByteString.Char8 as S8
 
-import Config (slackToken)
+import Config (slackConfig, SlackConfig(..))
 
 type ChannelId = String
 type ChannelName = String
@@ -81,7 +81,7 @@ slackPost t r j = setRequestBearerAuth (fromString t)
                 $ defaultRequest
 
 allChannels :: IO [Channel]
-allChannels = slackToken >>= allChannelsWithToken
+allChannels = slackConfig >>= allChannelsWithToken . (.token)
   where
     allChannelsWithToken token = do
       res <- httpJSON $ slackGet token "users.conversations"
@@ -89,7 +89,7 @@ allChannels = slackToken >>= allChannelsWithToken
       return resBody.channels
 
 channelByName :: String -> IO Channel
-channelByName n = slackToken >>= channelByNameWithToken
+channelByName n = slackConfig >>= channelByNameWithToken . (.token)
   where
     channelByNameWithToken token = do
       res <- httpJSON $ slackGet token "users.conversations"
@@ -97,7 +97,7 @@ channelByName n = slackToken >>= channelByNameWithToken
       return $ fromJust $ find (\c -> n == c.name) resBody.channels
 
 sendMsg :: String -> Channel -> IO ()
-sendMsg m c = slackToken >>= sendMsgWithToken
+sendMsg m c = slackConfig >>= sendMsgWithToken . (.token)
   where
     sendMsgWithToken token = do
       res <- httpJSON $ slackPost token "chat.postMessage" Message { channelId = c.id, text = m }
@@ -105,7 +105,7 @@ sendMsg m c = slackToken >>= sendMsgWithToken
       S8.putStrLn $ toStrict $ encode resBody
 
 allUsers :: IO [User]
-allUsers = slackToken >>= allUsersWithToken
+allUsers = slackConfig >>= allUsersWithToken . (.token)
   where
     allUsersWithToken token = do
       res <- httpJSON $ slackGet token "users.list"

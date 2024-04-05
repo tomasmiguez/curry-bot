@@ -5,6 +5,7 @@ db:
   database: 'slack_bot'
 slack:
   token: 'LoL'
+  channelName: 'curry-bot-tests'
 bamboo:
   token: 'LoL'
   reportId: '125'

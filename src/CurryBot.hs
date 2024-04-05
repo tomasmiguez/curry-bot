@@ -10,6 +10,7 @@ import Person
 
 import Data.Maybe (fromJust)
 import Data.Time.Calendar
+import Config (slackConfig, SlackConfig(..))
 
 updateSlackIds :: IO ()
 updateSlackIds = do
@@ -32,7 +33,7 @@ sendTodayBirthdayReminder' :: [Person] -> Maybe Day -> Day -> IO ()
 sendTodayBirthdayReminder' people lastReminderDay t
   | null people || maybeCompare lastReminderDay t = return ()
   | otherwise   = do
-    channel <- channelByName "general"
+    channel <- channelByName . (.channelName) =<< slackConfig
     _ <- sendMsg message channel
     _ <- saveBirthdayReminderEvent
     return ()
