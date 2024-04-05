@@ -5,3 +5,6 @@ db:
   database: 'slack_bot'
 slack:
   token: 'LoL'
+bamboo:
+  token: 'LoL'
+  reportId: '125'
