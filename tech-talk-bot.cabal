@@ -45,6 +45,7 @@ library
     , base >=4.7 && <5
     , bytestring
     , containers
+    , directory
     , http-client
     , http-conduit
     , text
@@ -68,6 +69,7 @@ executable tech-talk-bot-exe
     , base >=4.7 && <5
     , bytestring
     , containers
+    , directory
     , http-client
     , http-conduit
     , tech-talk-bot
@@ -93,6 +95,7 @@ test-suite tech-talk-bot-test
     , base >=4.7 && <5
     , bytestring
     , containers
+    , directory
     , http-client
     , http-conduit
     , tech-talk-bot

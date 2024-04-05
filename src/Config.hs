@@ -8,6 +8,7 @@ module Config (connStr, slackToken, bambooConfig, BambooConfig(..)) where
 
 import Data.Yaml
 import GHC.Generics
+import System.Directory
 
 data Config = Config
             { dbConfig :: !DbConfig
@@ -44,7 +45,9 @@ data BambooConfig = BambooConfig
 instance FromJSON BambooConfig
 
 config :: IO Config
-config = decodeFileThrow "config/config.yaml"
+config = do
+  home <- getHomeDirectory
+  decodeFileThrow (home ++ "/.config/curry_bot/config.yaml")
 
 connStr :: IO String
 connStr = buildConnString . (.dbConfig) <$> config
