@@ -1,6 +1,6 @@
-name:                tech-talk-bot
+name:                curry-bot
 version:             0.1.0.0
-github:              "tomasmiguez/tech-talk-bot"
+github:              "tomasmiguez/curry-bot"
 license:             BSD-3-Clause
 author:              "Tomas Miguez"
 maintainer:          "tomasmiguez99@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/tomasmiguez/tech-talk-bot#readme>
+description:         Please see the README on GitHub at <https://github.com/tomasmiguez/curry-bot#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -48,7 +48,7 @@ library:
   source-dirs: src
 
 executables:
-  tech-talk-bot-exe:
+  curry-bot-cli:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -56,10 +56,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - tech-talk-bot
+    - curry-bot
 
 tests:
-  tech-talk-bot-test:
+  curry-bot-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -67,4 +67,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - tech-talk-bot
+    - curry-bot

@@ -4,11 +4,11 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 
-name:           tech-talk-bot
+name:           curry-bot
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/tomasmiguez/tech-talk-bot#readme>
-homepage:       https://github.com/tomasmiguez/tech-talk-bot#readme
-bug-reports:    https://github.com/tomasmiguez/tech-talk-bot/issues
+description:    Please see the README on GitHub at <https://github.com/tomasmiguez/curry-bot#readme>
+homepage:       https://github.com/tomasmiguez/curry-bot#readme
+bug-reports:    https://github.com/tomasmiguez/curry-bot/issues
 author:         Tomas Miguez
 maintainer:     tomasmiguez99@gmail.com
 copyright:      MIT
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/tomasmiguez/tech-talk-bot
+  location: https://github.com/tomasmiguez/curry-bot
 
 library
   exposed-modules:
@@ -32,9 +32,9 @@ library
       Person
       Slack
   other-modules:
-      Paths_tech_talk_bot
+      Paths_curry_bot
   autogen-modules:
-      Paths_tech_talk_bot
+      Paths_curry_bot
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -53,12 +53,12 @@ library
     , yaml
   default-language: Haskell2010
 
-executable tech-talk-bot-exe
+executable curry-bot-cli
   main-is: Main.hs
   other-modules:
-      Paths_tech_talk_bot
+      Paths_curry_bot
   autogen-modules:
-      Paths_tech_talk_bot
+      Paths_curry_bot
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -69,22 +69,22 @@ executable tech-talk-bot-exe
     , base >=4.7 && <5
     , bytestring
     , containers
+    , curry-bot
     , directory
     , http-client
     , http-conduit
-    , tech-talk-bot
     , text
     , time
     , yaml
   default-language: Haskell2010
 
-test-suite tech-talk-bot-test
+test-suite curry-bot-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_tech_talk_bot
+      Paths_curry_bot
   autogen-modules:
-      Paths_tech_talk_bot
+      Paths_curry_bot
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -95,10 +95,10 @@ test-suite tech-talk-bot-test
     , base >=4.7 && <5
     , bytestring
     , containers
+    , curry-bot
     , directory
     , http-client
     , http-conduit
-    , tech-talk-bot
     , text
     , time
     , yaml

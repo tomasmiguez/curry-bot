@@ -1,4 +1,4 @@
-# tech-talk-bot
+# Curry Bot
 
 # References:
     - Reading YAML: https://stackoverflow.com/questions/13059806/reading-yaml-in-haskell

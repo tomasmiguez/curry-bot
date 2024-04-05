@@ -1,4 +1,4 @@
-# Changelog for `tech-talk-bot`
+# Changelog for `curry-bot`
 
 All notable changes to this project will be documented in this file.
 

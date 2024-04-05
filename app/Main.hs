@@ -18,7 +18,7 @@ run "remind-birthday" = sendTodayBirthdayReminder
 run _                 = putStrLn usage
 
 usage :: String
-usage = "Usage: tech-talk-bot-exe <command>.\n\
+usage = "Usage: curry-bot <command>.\n\
         \Possible commands are:\n\
         \import-bamboo: Queries Bamboo for people and upserts the list.\n\
         \update-slack: Updates Slack IDs of already existing people.\n\
