@@ -1,10 +1,11 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module Person (Person(..), everyoneHasSlackId, identifier) where
+module Person (Person(..), everyoneHasSlackId, listPeople) where
 
 import Data.Time.Calendar
 import Data.Maybe (isJust)
+import Data.List (intercalate)
 
 data Person = Person
             { slackId :: !(Maybe String)
@@ -20,3 +21,6 @@ everyoneHasSlackId = all (isJust . (.slackId))
 identifier :: Person -> String
 identifier Person{slackId=Just slackId} = "<@" ++ slackId ++ ">"
 identifier Person{slackId=Nothing, firstName=fn, lastName=ln} = fn ++ " " ++ ln
+
+listPeople :: [Person] -> String
+listPeople people = intercalate "\n" $ map (\p -> "- " ++ identifier p ++ ".") people

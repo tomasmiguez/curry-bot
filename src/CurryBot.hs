@@ -4,15 +4,15 @@
 module CurryBot (updateSlackIds, updateEmployees, sendTodayBirthdayReminder) where
 
 import Slack (allUsersWithEmail, channelByName, sendMsg, User(email, id))
-import BotDb (peopleByBirthdayRange, peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent)
+import BotDb (peopleByBirthdayRange, peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveEvent)
 import Bamboo (allEmployees, Employee(email))
-import Person (identifier, Person)
+import Person (listPeople, Person)
 import Utils (today)
 import Config (slackConfig, SlackConfig(..))
 
-import Data.Maybe (fromJust, isJust, isNothing)
+import Data.Maybe (fromJust, isJust, isNothing, catMaybes)
 import Data.Time.Calendar
-import Data.List (intercalate)
+import Data.List ( intercalate )
 
 updateSlackIds :: IO ()
 updateSlackIds = do
@@ -33,28 +33,15 @@ sendTodayBirthdayReminder = do
 
 sendTodayBirthdayReminderCheckDay :: Maybe Day -> Day -> IO ()
 sendTodayBirthdayReminderCheckDay lastReminderDay t
-  | leqMaybe lastReminderDay t = return ()
+  | lastReminderDay `leqMaybe` t = return ()
   | weekend t = return ()
   | dayOfWeek t == Monday = do
     people <- peopleByBirthdayRange (addDays (-2) t) t
     thisWeekPeople <- peopleByBirthdayRange (addDays 1 t) (addDays 7 t)
-    sendTodayBirthdayReminderTo thisWeekPeople "Esta semana van a cumplir años: \n"
-    sendTodayBirthdayReminderTo people "Cumplieron años: \n"
+    sendEvent "birthdayReminder" [birthdayReminderMsg people, upcomingBirthdayMsg thisWeekPeople]
   | otherwise   = do
     people <- peopleBirthdayToday
-    sendTodayBirthdayReminderTo people "Cumplieron años: \n"
-
-sendTodayBirthdayReminderTo :: [Person] -> String -> IO ()
-sendTodayBirthdayReminderTo people header
-  | null people = return ()
-  | otherwise   = do
-    channel <- channelByName . (.channelName) =<< slackConfig
-    _ <- sendMsg message channel
-    _ <- saveBirthdayReminderEvent
-    return ()
-    where
-      body = intercalate "\n" $ map (\p -> "- " ++ identifier p ++ ".") people
-      message = header ++ body
+    sendEvent "birthdayReminder"  [birthdayReminderMsg people]
 
 weekend :: Day -> Bool
 weekend d = dow == Saturday || dow == Sunday
@@ -63,3 +50,18 @@ weekend d = dow == Saturday || dow == Sunday
 leqMaybe :: Ord a => Maybe a -> a -> Bool
 leqMaybe Nothing _ = False
 leqMaybe (Just x) y = x >= y
+
+birthdayReminderMsg :: [Person] -> Maybe String
+birthdayReminderMsg [] = Nothing
+birthdayReminderMsg people = Just $ "Cumplieron años: \n" ++ listPeople people
+
+upcomingBirthdayMsg :: [Person] -> Maybe String
+upcomingBirthdayMsg [] = Nothing
+upcomingBirthdayMsg people = Just $ "Esta semana van a cumplir años: \n" ++ listPeople people
+
+sendEvent :: String -> [Maybe String] -> IO()
+sendEvent name msgs = do
+  channel <- channelByName . (.channelName) =<< slackConfig
+  _ <- sendMsg (intercalate "\n\n" $ catMaybes msgs) channel
+  _ <- saveEvent name
+  return ()

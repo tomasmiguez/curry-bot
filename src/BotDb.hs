@@ -3,7 +3,7 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module BotDb (peopleByBirthdayRange,peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent) where
+module BotDb (peopleByBirthdayRange,peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveEvent) where
 
 import Bamboo (Employee(..))
 import Config (connStr)
@@ -110,10 +110,10 @@ lastBirthdayReminderDay = do
   disconnect c
   return $ localDay . zonedTimeToLocalTime . fromSql . head <$> listToMaybe r
 
-saveBirthdayReminderEvent :: IO ()
-saveBirthdayReminderEvent = do
+saveEvent :: String -> IO ()
+saveEvent eventName = do
   c <- conn
-  _ <- run c "INSERT INTO events (type, ocurred_at) VALUES ('birthdayReminder', NOW())" []
+  _ <- run c "INSERT INTO events (type, ocurred_at) VALUES (?, NOW())" [toSql eventName]
   commit c
   disconnect c
   return ()

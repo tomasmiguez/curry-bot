@@ -97,6 +97,7 @@ channelByName n = slackConfig >>= channelByNameWithToken . (.token)
       return $ fromJust $ find (\c -> n == c.name) resBody.channels
 
 sendMsg :: String -> Channel -> IO ()
+sendMsg "" _ = return ()
 sendMsg m c = slackConfig >>= sendMsgWithToken . (.token)
   where
     sendMsgWithToken token = do
