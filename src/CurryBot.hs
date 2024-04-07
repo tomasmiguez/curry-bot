@@ -35,13 +35,15 @@ sendTodayBirthdayReminderCheckDay lastReminderDay t
   | weekend t = return ()
   | dayOfWeek t == Monday = do
     people <- peopleByBirthdayRange (addDays (-2) t) t
-    sendTodayBirthdayReminderTo people
+    thisWeekPeople <- peopleByBirthdayRange (addDays 1 t) (addDays 7 t)
+    sendTodayBirthdayReminderTo thisWeekPeople "Esta semana van a cumplir años: \n"
+    sendTodayBirthdayReminderTo people "Cumplieron años: \n"
   | otherwise   = do
     people <- peopleBirthdayToday
-    sendTodayBirthdayReminderTo people
+    sendTodayBirthdayReminderTo people "Cumplieron años: \n"
 
-sendTodayBirthdayReminderTo :: [Person] -> IO ()
-sendTodayBirthdayReminderTo people
+sendTodayBirthdayReminderTo :: [Person] -> String -> IO ()
+sendTodayBirthdayReminderTo people header
   | null people = return ()
   | otherwise   = do
     channel <- channelByName . (.channelName) =<< slackConfig
@@ -49,7 +51,6 @@ sendTodayBirthdayReminderTo people
     _ <- saveBirthdayReminderEvent
     return ()
     where
-      header = "Cumplieron años: \n"
       body = intercalate "\n" $ map (\p -> "- " ++ identifier p ++ ".") people
       message = header ++ body
 
