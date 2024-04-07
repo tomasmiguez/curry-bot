@@ -3,7 +3,7 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module BotDb (peopleByBirthdayRange, today, peopleBirthdayToday, updateSlackIdByEmail, upsertEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent) where
+module BotDb (peopleByBirthdayRange, today, peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent) where
 
 import Config (connStr)
 import Person
@@ -73,6 +73,12 @@ updateSlackIdByEmail slackId email = do
   commit c
   disconnect c
 
+refreshEmployees :: [Employee] -> IO ()
+refreshEmployees employees = do
+  _ <- upsertEmployees employees
+  _ <- deleteMissingEmployees employees
+  return ()
+
 upsertEmployees :: [Employee] -> IO ()
 upsertEmployees employees = do
   let values = (\e -> [toSql e.email, toSql e.firstName, toSql e.lastName, toSql e.birthday]) =<< employees
@@ -82,6 +88,17 @@ upsertEmployees employees = do
               ++ placeholders
               ++ " ON CONFLICT (email) DO "
               ++ updateStmt
+  c <- conn
+  _ <- run c query values
+  commit c
+  disconnect c
+  return ()
+
+deleteMissingEmployees :: [Employee] -> IO ()
+deleteMissingEmployees employees = do
+  let values = map (toSql . (.email)) employees
+      placeholders = "(" ++ intercalate "," (replicate (length employees) "?") ++ ")"
+      query = "DELETE FROM people WHERE email NOT IN " ++ placeholders
   c <- conn
   _ <- run c query values
   commit c

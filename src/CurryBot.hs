@@ -21,7 +21,7 @@ updateSlackIds = do
 updateEmployees :: IO ()
 updateEmployees = do
   employees <- allEmployees
-  upsertEmployees employees
+  refreshEmployees employees
 
 sendTodayBirthdayReminder :: IO ()
 sendTodayBirthdayReminder = do
