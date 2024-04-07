@@ -3,7 +3,7 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module BotDb (today, peopleBirthdayToday, updateSlackIdByEmail, upsertEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent) where
+module BotDb (peopleByBirthdayRange, today, peopleBirthdayToday, updateSlackIdByEmail, upsertEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent) where
 
 import Config (connStr)
 import Person
@@ -20,22 +20,43 @@ import Data.Maybe (listToMaybe)
 conn :: IO Connection
 conn = connStr >>= connectPostgreSQL
 
-peopleByBirthday :: Int -> Int -> IO [Person]
-peopleByBirthday m d = do
+--- TODO: Take into account beginning and end on different years
+--- ie from 30-12-2021 to 3-1-2022. For this cases we should insert another two dates in the middle, the last date
+--- of the previous year and the first date of the new one, and make it in two ranges.
+peopleByBirthdayRange :: Day -> Day -> IO [Person]
+peopleByBirthdayRange beg end = do
+  let
+    (begYear, begMonth, begDay) = toGregorian beg
+    (endYear, endMonth, endDay) = toGregorian end
+    query = "SELECT \n\
+            \  slack_id, email, first_name, last_name, birthday \n\
+            \FROM people \n\
+            \WHERE \n\
+            \  make_date(?, \n\
+            \            EXTRACT(MONTH FROM birthday)::int, \n\
+            \            EXTRACT(DAY FROM birthday)::int) \n\
+            \  BETWEEN \n\
+            \    make_date(?, ?, ?) \n\
+            \    AND \n\
+            \    make_date(?, ?, ?);"
   c <- conn
-  r <- quickQuery' c "SELECT slack_id, email, first_name, last_name, birthday FROM people where EXTRACT(MONTH FROM birthday) = ? AND EXTRACT(DAY FROM birthday) = ?" [toSql m, toSql d]
+  r <- quickQuery' c query [toSql begYear, toSql begYear, toSql begMonth, toSql begDay, toSql endYear, toSql endMonth, toSql endDay]
   return $ map rowToPeople r
   where
+    rowToPeople :: [SqlValue] -> Person
     rowToPeople [sqlSlackId, sqlEmail, sqlFirstName, sqlLastName, sqlBirthday] =
       Person { slackId = fromSql sqlSlackId
-             , email = fromSql sqlEmail
-             , firstName = fromSql sqlFirstName
-             , lastName = fromSql sqlLastName
-             , birthday = fromSql sqlBirthday }
+              , email = fromSql sqlEmail
+              , firstName = fromSql sqlFirstName
+              , lastName = fromSql sqlLastName
+              , birthday = fromSql sqlBirthday }
     rowToPeople x = error $ "Unexpected result: " ++ show x
 
 peopleBirthdayToday :: IO [Person]
-peopleBirthdayToday = (\(_, m, d) -> peopleByBirthday m d) . toGregorian =<< today
+-- peopleBirthdayToday = join $ peopleByBirthdayRange <$> today <*> today
+peopleBirthdayToday = do
+  t <- today
+  peopleByBirthdayRange t t
 
 today :: IO Day
 today = localDay . zonedTimeToLocalTime <$> getZonedTime
