@@ -33,7 +33,7 @@ sendTodayBirthdayReminder = do
 
 sendTodayBirthdayReminderCheckDay :: Maybe Day -> Day -> IO ()
 sendTodayBirthdayReminderCheckDay lastReminderDay t
-  | maybeCompare lastReminderDay t = return ()
+  | leqMaybe lastReminderDay t = return ()
   | weekend t = return ()
   | dayOfWeek t == Monday = do
     people <- peopleByBirthdayRange (addDays (-2) t) t
@@ -60,6 +60,6 @@ weekend :: Day -> Bool
 weekend d = dow == Saturday || dow == Sunday
   where dow = dayOfWeek d
 
-maybeCompare :: Ord a => Maybe a -> a -> Bool
-maybeCompare Nothing _ = False
-maybeCompare (Just x) y = x >= y
+leqMaybe :: Ord a => Maybe a -> a -> Bool
+leqMaybe Nothing _ = False
+leqMaybe (Just x) y = x >= y
