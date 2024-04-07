@@ -65,7 +65,7 @@ CREATE TABLE public.people (
     email character varying(255) NOT NULL,
     first_name character varying(50) NOT NULL,
     last_name character varying(50) NOT NULL,
-    birthday date
+    date_of_birth date
 );
 
 

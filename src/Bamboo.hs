@@ -17,7 +17,7 @@ data Employee = Employee
               { email :: !(Maybe String)
               , firstName :: !String
               , lastName :: !String
-              , birthday :: !(Maybe Day)
+              , dateOfBirth :: !(Maybe Day)
               } deriving (Show)
 
 instance FromJSON Employee where
@@ -25,10 +25,10 @@ instance FromJSON Employee where
     Employee <$> obj .: "workEmail"
              <*> obj .: "firstName"
              <*> obj .: "lastName"
-             <*> parseBirthday obj
+             <*> parseDayOfBirth obj
 
-parseBirthday :: Object -> Parser (Maybe Day)
-parseBirthday obj = do
+parseDayOfBirth :: Object -> Parser (Maybe Day)
+parseDayOfBirth obj = do
   date <- obj .: "dateOfBirth"
   if date == "0000-00-00"
     then return Nothing

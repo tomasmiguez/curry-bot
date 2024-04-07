@@ -11,7 +11,7 @@ data Person = Person
             , email :: !(Maybe String)
             , firstName :: !String
             , lastName :: !String
-            , birthday :: !(Maybe Day)
+            , dateOfBirth :: !(Maybe Day)
             } deriving (Show)
 
 everyoneHasSlackId :: [Person] -> Bool

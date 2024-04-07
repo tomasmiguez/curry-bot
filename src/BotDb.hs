@@ -29,12 +29,12 @@ peopleByBirthdayRange beg end = do
     (begYear, begMonth, begDay) = toGregorian beg
     (endYear, endMonth, endDay) = toGregorian end
     query = "SELECT \n\
-            \  slack_id, email, first_name, last_name, birthday \n\
+            \  slack_id, email, first_name, last_name, date_of_birth \n\
             \FROM people \n\
             \WHERE \n\
             \  make_date(?, \n\
-            \            EXTRACT(MONTH FROM birthday)::int, \n\
-            \            EXTRACT(DAY FROM birthday)::int) \n\
+            \            EXTRACT(MONTH FROM date_of_birth)::int, \n\
+            \            EXTRACT(DAY FROM date_of_birth)::int) \n\
             \  BETWEEN \n\
             \    make_date(?, ?, ?) \n\
             \    AND \n\
@@ -44,12 +44,12 @@ peopleByBirthdayRange beg end = do
   return $ map rowToPeople r
   where
     rowToPeople :: [SqlValue] -> Person
-    rowToPeople [sqlSlackId, sqlEmail, sqlFirstName, sqlLastName, sqlBirthday] =
+    rowToPeople [sqlSlackId, sqlEmail, sqlFirstName, sqlLastName, sqlDateOfBirth] =
       Person { slackId = fromSql sqlSlackId
               , email = fromSql sqlEmail
               , firstName = fromSql sqlFirstName
               , lastName = fromSql sqlLastName
-              , birthday = fromSql sqlBirthday }
+              , dateOfBirth = fromSql sqlDateOfBirth }
     rowToPeople x = error $ "Unexpected result: " ++ show x
 
 peopleBirthdayToday :: IO [Person]
@@ -81,10 +81,10 @@ refreshEmployees employees = do
 
 upsertEmployees :: [Employee] -> IO ()
 upsertEmployees employees = do
-  let values = (\e -> [toSql e.email, toSql e.firstName, toSql e.lastName, toSql e.birthday]) =<< employees
+  let values = (\e -> [toSql e.email, toSql e.firstName, toSql e.lastName, toSql e.dateOfBirth]) =<< employees
       placeholders = intercalate "," (replicate (length employees) "(?,?,?,?)")
-      updateStmt = "UPDATE SET first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, birthday = EXCLUDED.birthday"
-      query = "INSERT INTO people (email, first_name, last_name, birthday) VALUES "
+      updateStmt = "UPDATE SET first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, date_of_birth = EXCLUDED.date_of_birth"
+      query = "INSERT INTO people (email, first_name, last_name, date_of_birth) VALUES "
               ++ placeholders
               ++ " ON CONFLICT (email) DO "
               ++ updateStmt
