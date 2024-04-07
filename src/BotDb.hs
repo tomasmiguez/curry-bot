@@ -3,11 +3,12 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module BotDb (peopleByBirthdayRange, today, peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent) where
+module BotDb (peopleByBirthdayRange,peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent) where
 
-import Config (connStr)
-import Person
 import Bamboo (Employee(..))
+import Config (connStr)
+import Person (Person(..))
+import Utils (today)
 
 import Database.HDBC
 import Database.HDBC.PostgreSQL
@@ -57,9 +58,6 @@ peopleBirthdayToday :: IO [Person]
 peopleBirthdayToday = do
   t <- today
   peopleByBirthdayRange t t
-
-today :: IO Day
-today = localDay . zonedTimeToLocalTime <$> getZonedTime
 
 -- Handlear bien los dos casos, que pasa si no encuentra a nadie en la DB pero si en Slack?
 updateSlackIdByEmail :: String -> String -> IO ()

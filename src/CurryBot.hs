@@ -3,14 +3,15 @@
 
 module CurryBot (updateSlackIds, updateEmployees, sendTodayBirthdayReminder) where
 
-import Slack
-import BotDb
-import Bamboo
-import Person
+import Slack (allUsersWithEmail, channelByName, sendMsg, User(email, id))
+import BotDb (peopleByBirthdayRange, peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveBirthdayReminderEvent)
+import Bamboo (allEmployees, Employee(email))
+import Person (identifier, Person)
+import Utils (today)
+import Config (slackConfig, SlackConfig(..))
 
 import Data.Maybe (fromJust, isJust, isNothing)
 import Data.Time.Calendar
-import Config (slackConfig, SlackConfig(..))
 import Data.List (intercalate)
 
 updateSlackIds :: IO ()
