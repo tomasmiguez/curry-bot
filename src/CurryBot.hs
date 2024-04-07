@@ -25,14 +25,24 @@ updateEmployees = do
 
 sendTodayBirthdayReminder :: IO ()
 sendTodayBirthdayReminder = do
-  birthdayPeople <- peopleBirthdayToday
   lastReminderDay <- lastBirthdayReminderDay
   t <- today
-  sendTodayBirthdayReminder' birthdayPeople lastReminderDay t
+  sendTodayBirthdayReminderCheckDay lastReminderDay t
 
-sendTodayBirthdayReminder' :: [Person] -> Maybe Day -> Day -> IO ()
-sendTodayBirthdayReminder' people lastReminderDay t
-  | null people || maybeCompare lastReminderDay t = return ()
+sendTodayBirthdayReminderCheckDay :: Maybe Day -> Day -> IO ()
+sendTodayBirthdayReminderCheckDay lastReminderDay t
+  | maybeCompare lastReminderDay t = return ()
+  | weekend t = return ()
+  | dayOfWeek t == Monday = do
+    people <- peopleByBirthdayRange (addDays (-2) t) t
+    sendTodayBirthdayReminderTo people
+  | otherwise   = do
+    people <- peopleBirthdayToday
+    sendTodayBirthdayReminderTo people
+
+sendTodayBirthdayReminderTo :: [Person] -> IO ()
+sendTodayBirthdayReminderTo people
+  | null people = return ()
   | otherwise   = do
     channel <- channelByName . (.channelName) =<< slackConfig
     _ <- sendMsg message channel
@@ -42,6 +52,10 @@ sendTodayBirthdayReminder' people lastReminderDay t
       header = "Cumplieron años: \n"
       body = intercalate "\n" $ map (\p -> "- " ++ identifier p ++ ".") people
       message = header ++ body
+
+weekend :: Day -> Bool
+weekend d = dow == Saturday || dow == Sunday
+  where dow = dayOfWeek d
 
 maybeCompare :: Ord a => Maybe a -> a -> Bool
 maybeCompare Nothing _ = False
