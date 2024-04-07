@@ -11,6 +11,7 @@ import Person
 import Data.Maybe (fromJust)
 import Data.Time.Calendar
 import Config (slackConfig, SlackConfig(..))
+import Data.List (intercalate)
 
 updateSlackIds :: IO ()
 updateSlackIds = do
@@ -38,8 +39,8 @@ sendTodayBirthdayReminder' people lastReminderDay t
     _ <- saveBirthdayReminderEvent
     return ()
     where
-      header = "Hoy cumplen años: \n"
-      body = "- " ++ (identifier =<< people) ++ ".\n"
+      header = "Cumplieron años: \n"
+      body = intercalate "\n" $ map (\p -> "- " ++ identifier p ++ ".") people
       message = header ++ body
 
 maybeCompare :: Ord a => Maybe a -> a -> Bool
