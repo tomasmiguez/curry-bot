@@ -8,7 +8,7 @@ import BotDb
 import Bamboo
 import Person
 
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isJust, isNothing)
 import Data.Time.Calendar
 import Config (slackConfig, SlackConfig(..))
 import Data.List (intercalate)
@@ -21,7 +21,8 @@ updateSlackIds = do
 updateEmployees :: IO ()
 updateEmployees = do
   employees <- allEmployees
-  refreshEmployees employees
+  print $ filter (isNothing . (.email)) employees
+  refreshEmployees $ filter (isJust . (.email)) employees
 
 sendTodayBirthdayReminder :: IO ()
 sendTodayBirthdayReminder = do

@@ -62,7 +62,7 @@ ALTER SEQUENCE public.events_id_seq OWNED BY public.events.id;
 CREATE TABLE public.people (
     id integer NOT NULL,
     slack_id character varying(50),
-    email character varying(255),
+    email character varying(255) NOT NULL,
     first_name character varying(50) NOT NULL,
     last_name character varying(50) NOT NULL,
     birthday date
