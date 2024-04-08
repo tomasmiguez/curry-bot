@@ -73,12 +73,15 @@ updateSlackIdByEmail slackId email = do
 
 refreshEmployees :: [Employee] -> IO ()
 refreshEmployees employees = do
-  _ <- upsertEmployees employees
-  _ <- deleteMissingEmployees employees
+  c <- conn
+  _ <- upsertEmployees c employees
+  _ <- deleteMissingEmployees c employees
+  commit c
+  disconnect c
   return ()
 
-upsertEmployees :: [Employee] -> IO ()
-upsertEmployees employees = do
+upsertEmployees :: Connection -> [Employee] -> IO ()
+upsertEmployees c employees = do
   let values = (\e -> [toSql e.email, toSql e.firstName, toSql e.lastName, toSql e.dateOfBirth]) =<< employees
       placeholders = intercalate "," (replicate (length employees) "(?,?,?,?)")
       updateStmt = "UPDATE SET first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, date_of_birth = EXCLUDED.date_of_birth"
@@ -86,21 +89,16 @@ upsertEmployees employees = do
               ++ placeholders
               ++ " ON CONFLICT (email) DO "
               ++ updateStmt
-  c <- conn
   _ <- run c query values
-  commit c
-  disconnect c
   return ()
 
-deleteMissingEmployees :: [Employee] -> IO ()
-deleteMissingEmployees employees = do
+-- TODO: we should add a boolean flag to check if the person is active
+deleteMissingEmployees :: Connection -> [Employee] -> IO ()
+deleteMissingEmployees c employees = do
   let values = map (toSql . (.email)) employees
       placeholders = "(" ++ intercalate "," (replicate (length employees) "?") ++ ")"
       query = "DELETE FROM people WHERE email NOT IN " ++ placeholders
-  c <- conn
   _ <- run c query values
-  commit c
-  disconnect c
   return ()
 
 lastBirthdayReminderDay :: IO (Maybe Day)
