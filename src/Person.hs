@@ -9,7 +9,7 @@ import Data.List (intercalate)
 
 data Person = Person
             { slackId :: !(Maybe String)
-            , email :: !(Maybe String)
+            , email :: !String
             , firstName :: !String
             , lastName :: !String
             , dateOfBirth :: !(Maybe Day)
