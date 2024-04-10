@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Config (connStr, slackConfig, SlackConfig(..), bambooConfig, BambooConfig(..)) where
+module Config (connStr, slackConfig, SlackConfig(..), bambooConfig, BambooConfig(..), ignoredBirthdays) where
 
 import Data.Yaml
 import GHC.Generics
@@ -14,6 +14,7 @@ data Config = Config
             { dbConfig :: !DbConfig
             , slackConfig :: !SlackConfig
             , bambooConfig :: !BambooConfig
+            , ignoredBirthdays :: ![String]
             } deriving (Show)
 
 instance FromJSON Config where
@@ -21,6 +22,7 @@ instance FromJSON Config where
     <$> v .: "db"
     <*> v .: "slack"
     <*> v .: "bamboo"
+    <*> v .: "ignoredBirthdays"
 
 data DbConfig = DbConfig
               { user :: !String
@@ -61,3 +63,6 @@ slackConfig = (.slackConfig) <$> config
 
 bambooConfig :: IO BambooConfig
 bambooConfig = (.bambooConfig) <$> config
+
+ignoredBirthdays :: IO [String]
+ignoredBirthdays = (.ignoredBirthdays) <$> config

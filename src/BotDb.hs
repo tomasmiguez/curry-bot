@@ -6,7 +6,7 @@
 module BotDb (peopleByBirthdayRange,peopleBirthdayToday, updateSlackIdByEmail, refreshEmployees, lastBirthdayReminderDay, saveEvent) where
 
 import Bamboo (Employee(..))
-import Config (connStr)
+import Config (connStr, ignoredBirthdays)
 import Person (Person(..))
 import Utils (today)
 
@@ -42,7 +42,8 @@ peopleByBirthdayRange beg end = do
             \    make_date(?, ?, ?);"
   c <- conn
   r <- quickQuery' c query [toSql begYear, toSql begYear, toSql begMonth, toSql begDay, toSql endYear, toSql endMonth, toSql endDay]
-  return $ map rowToPeople r
+  ignored <- ignoredBirthdays
+  return $ filter (not . flip elem ignored . (.email)) $ map rowToPeople r
   where
     rowToPeople :: [SqlValue] -> Person
     rowToPeople [sqlSlackId, sqlEmail, sqlFirstName, sqlLastName, sqlDateOfBirth] =

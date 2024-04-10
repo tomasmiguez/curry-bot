@@ -9,3 +9,5 @@ slack:
 bamboo:
   token: 'LoL'
   reportId: '125'
+ignoredBirthdays:
+  - 'example@domain.com'
