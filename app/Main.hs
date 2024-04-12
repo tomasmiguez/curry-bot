@@ -10,10 +10,7 @@ main = run . head =<< getArgs
 run :: String -> IO ()
 run "import-bamboo"   = updateEmployees
 run "update-slack"    = updateSlackIds
-run "update-people"   = do
-  _ <- updateEmployees
-  _ <- updateSlackIds
-  return ()
+run "update-people"   = updateEmployees >> updateSlackIds
 run "remind-birthday" = sendTodayBirthdayReminder
 run _                 = putStrLn usage
 
