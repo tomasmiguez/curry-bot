@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: curry_bot_local
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: curry_bot
+    networks:
+      curry-bot-network:
+        ipv4_address: 10.7.0.2
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - curry-bot-data:/var/lib/postgresql/data
+
+volumes:
+  curry-bot-data:
+    external: true
+
+networks:
+  curry-bot-network:
+    driver: bridge
+    ipam:
+      config:
+        - gateway: 10.7.0.1
+          subnet: 10.7.0.0/16
